@@ -33,5 +33,5 @@ python3 -m http.server 8000
 
 ## Contact
 
-- LinkedIn: [Samah Elashry](https://www.linkedin.com/in/samah-elashry)
+- LinkedIn: [Samah Elashry](https://www.linkedin.com/in/samah-elashry-700132207)
 - Open to full-time developer roles in Dubai (on-site, hybrid or remote) and to freelance projects.
