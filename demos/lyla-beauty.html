@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lyla Beauty Lounge · Demo by Samah Elashry</title>
+<meta name="description" content="Demo project by Samah Elashry: website and AI booking assistant for a fictional beauty salon in Dubai, in English and Arabic.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Jost:wght@400;500;600&family=Marcellus&family=Reem+Kufi:wght@500;700&display=swap">
+<style>
+/* Lyla Beauty Lounge (fictional brand). Single light theme by choice: a salon's brand site.
+   Layout: hero with an arch motif, treatments by category, booking form, floating assistant. */
+:root {
+  color-scheme: light;
+  --bg: #F8EEF0;
+  --surface: #FFFFFF;
+  --ink: #2E1A24;
+  --muted: #765F6B;
+  --line: #EAD8DD;
+  --rose: #A63E68;
+  --rose-dark: #842F51;
+  --rose-soft: #F3DCE5;
+  --gold: #9C7539;
+  --gold-soft: #F1E6D3;
+  --dark: #2E1A24;
+  --on-dark: #FAEFF3;
+  --ok: #2F7A55;
+  --ok-soft: #E1F1E8;
+  --err: #B3261E;
+  --display: "Marcellus", "Iowan Old Style", Georgia, serif;
+  --body: "Jost", "Segoe UI", system-ui, sans-serif;
+}
+html[lang="ar"] {
+  --display: "Reem Kufi", "IBM Plex Sans Arabic", Tahoma, sans-serif;
+  --body: "IBM Plex Sans Arabic", Tahoma, system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 1rem/1.6 var(--body); -webkit-font-smoothing: antialiased; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+h1, h2, h3 { font-family: var(--display); font-weight: 400; margin: 0; text-wrap: balance; line-height: 1.15; }
+html[lang="ar"] h1, html[lang="ar"] h2, html[lang="ar"] h3 { font-weight: 700; line-height: 1.4; }
+p { margin: 0; }
+a { color: var(--rose); }
+button { font: inherit; }
+:focus-visible { outline: 2px solid var(--rose); outline-offset: 3px; border-radius: 6px; }
+.wrap { max-width: 1120px; margin-inline: auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* Demo bar */
+.demo-bar { background: var(--dark); color: var(--on-dark); font: 500 .8125rem/1.4 "Jost", system-ui, sans-serif; padding-top: env(safe-area-inset-top, 0px); }
+.demo-row { display: flex; gap: 6px 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding-block: 9px; }
+.demo-bar b { color: #F2C4D5; font-weight: 600; }
+.demo-bar a { color: var(--on-dark); text-decoration: none; }
+.demo-bar a:hover { text-decoration: underline; }
+
+/* Header */
+header.site { border-bottom: 1px solid var(--line); }
+.head-row { display: flex; align-items: center; gap: 28px; min-height: 76px; }
+.logo { display: flex; flex-direction: column; line-height: 1; text-decoration: none; color: var(--ink); }
+.logo b { font: 400 1.625rem/1 "Marcellus", Georgia, serif; letter-spacing: .32em; }
+.logo span { font-size: .6875rem; letter-spacing: .3em; text-transform: uppercase; color: var(--muted); margin-top: 7px; }
+html[lang="ar"] .logo span { letter-spacing: 0; font-size: .8125rem; }
+nav.main { display: flex; gap: 26px; margin-inline-start: auto; }
+nav.main a { color: var(--ink); text-decoration: none; font-weight: 500; }
+nav.main a:hover { color: var(--rose); }
+.lang-btn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 8px 16px; cursor: pointer; font-weight: 500; }
+.lang-btn:hover { border-color: var(--rose); }
+@media (max-width: 720px) { nav.main { display: none; } .lang-btn { margin-inline-start: auto; } }
+
+/* Hero */
+.hero { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 48px; align-items: center; padding-block: 64px 76px; }
+.hero-copy { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.kicker { font-size: .8125rem; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); font-weight: 600; }
+html[lang="ar"] .kicker { letter-spacing: 0; font-size: .9375rem; }
+.hero h1 { font-size: clamp(2.5rem, 1.5rem + 3.8vw, 4.375rem); letter-spacing: -.01em; }
+.lead { font-size: 1.125rem; color: var(--muted); max-width: 50ch; }
+.ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 24px; border-radius: 999px; border: 1px solid transparent; background: var(--rose); color: #fff; text-decoration: none; font-weight: 600; cursor: pointer; transition: background .2s; }
+.btn:hover { background: var(--rose-dark); }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--ink); }
+.btn.ghost:hover { background: var(--ink); color: var(--bg); }
+.hero-art { position: relative; min-height: 440px; display: grid; place-items: center; }
+.arch { width: min(310px, 78%); aspect-ratio: 3 / 4; border-radius: 999px 999px 20px 20px; background: linear-gradient(172deg, #EDC3D3 0%, #C8668E 50%, #7D2C4E 100%); position: relative; overflow: hidden; box-shadow: 0 34px 60px -30px rgba(46, 26, 36, .55); }
+.arch::before { content: ""; position: absolute; inset: 14px; border-radius: 999px 999px 10px 10px; border: 1px solid rgba(255, 255, 255, .5); }
+.arch::after { content: ""; position: absolute; left: 50%; top: 20%; width: 44%; aspect-ratio: 1; translate: -50% 0; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #FFF1D6, #D9AE6C 72%); }
+.arch .floor { position: absolute; inset: auto 0 0 0; height: 30%; background: repeating-linear-gradient(45deg, rgba(255,255,255,.14) 0 10px, transparent 10px 20px), repeating-linear-gradient(-45deg, rgba(255,255,255,.14) 0 10px, transparent 10px 20px); }
+.chip-float { position: absolute; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 11px 16px; box-shadow: 0 14px 30px -16px rgba(46, 26, 36, .35); display: flex; gap: 10px; align-items: center; font-weight: 500; font-size: .9375rem; }
+.chip-float.open { inset-inline-end: 0; bottom: 12%; }
+.chip-float.open i { width: 9px; height: 9px; border-radius: 50%; background: var(--ok); flex: none; }
+.chip-float.ask { inset-inline-start: 0; top: 14%; cursor: pointer; color: var(--ink); }
+.chip-float.ask .av { width: 26px; height: 26px; border-radius: 50%; background: linear-gradient(160deg, #EDC3D3, var(--rose)); flex: none; }
+@media (max-width: 860px) { .hero { grid-template-columns: minmax(0, 1fr); padding-block: 40px 52px; gap: 28px; } .hero-art { min-height: 340px; } }
+
+/* Sections */
+section.block { padding-block: 76px; border-top: 1px solid var(--line); }
+.sec-head { display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px; max-width: 60ch; }
+.sec-head h2 { font-size: clamp(1.875rem, 1.35rem + 1.7vw, 2.75rem); }
+.sec-head p { color: var(--muted); }
+@media (max-width: 720px) { section.block { padding-block: 52px; } }
+
+.cats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+@media (max-width: 960px) { .cats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 620px) { .cats { grid-template-columns: minmax(0, 1fr); } }
+.cat { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 22px 22px 8px; display: flex; flex-direction: column; min-width: 0; }
+.cat h3 { font-size: 1.375rem; margin-bottom: 8px; }
+.item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 12px; padding-block: 13px; border-top: 1px solid var(--line); align-items: baseline; }
+.item .name { font-weight: 500; }
+.item .price { font-weight: 600; font-variant-numeric: tabular-nums; text-align: end; white-space: nowrap; }
+.item .dur { color: var(--muted); font-size: .875rem; }
+.item .book-link { justify-self: end; background: none; border: 0; color: var(--rose); font-weight: 600; font-size: .875rem; cursor: pointer; padding: 0; }
+.item .book-link:hover { text-decoration: underline; }
+
+/* Booking */
+.book-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.form-card { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 28px; display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.field { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.field label, .field .lbl { font-weight: 600; font-size: .9375rem; }
+.field input, .field select { font: inherit; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--ink); width: 100%; min-width: 0; }
+.field input:focus, .field select:focus { border-color: var(--rose); outline: none; box-shadow: 0 0 0 3px var(--rose-soft); }
+.row2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+.slots { display: flex; flex-wrap: wrap; gap: 8px; }
+.slot { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 8px 14px; cursor: pointer; font-variant-numeric: tabular-nums; }
+.slot:hover:not(:disabled) { border-color: var(--rose); }
+.slot[aria-pressed="true"] { background: var(--rose); border-color: var(--rose); color: #fff; }
+.slot:disabled { cursor: not-allowed; color: #B5A2AB; text-decoration: line-through; background: transparent; }
+.err { color: var(--err); font-size: .875rem; min-height: 1.3em; }
+.confirm { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.confirm .tick { width: 46px; height: 46px; border-radius: 50%; background: var(--ok-soft); color: var(--ok); display: grid; place-items: center; font-size: 1.375rem; font-weight: 700; }
+.confirm h3 { font-size: 1.75rem; }
+.confirm .summary { background: var(--bg); border-radius: 14px; padding: 14px 16px; width: 100%; white-space: pre-line; font-weight: 500; }
+.confirm small { color: var(--muted); }
+.visit { background: var(--dark); color: var(--on-dark); border-radius: 22px; padding: 28px; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.visit h3 { font-size: 1.5rem; }
+.visit dl { margin: 0; display: grid; gap: 16px; }
+.visit dt { font-size: .75rem; text-transform: uppercase; letter-spacing: .14em; color: #E7B9CB; margin-bottom: 4px; }
+html[lang="ar"] .visit dt { letter-spacing: 0; font-size: .875rem; }
+.visit dd { margin: 0; white-space: pre-line; }
+@media (max-width: 860px) { .book-grid, .row2 { grid-template-columns: minmax(0, 1fr); } .form-card, .visit { padding: 22px; } }
+
+footer { padding-block: 28px 100px; color: var(--muted); font-size: .875rem; border-top: 1px solid var(--line); }
+
+/* Assistant */
+.launcher { position: fixed; z-index: 40; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); inset-inline-end: max(18px, env(safe-area-inset-right, 0px)); display: flex; align-items: center; gap: 10px; padding: 10px 18px 10px 10px; border-radius: 999px; border: 0; background: var(--dark); color: var(--on-dark); font-weight: 600; cursor: pointer; box-shadow: 0 14px 34px -12px rgba(46, 26, 36, .6); }
+html[dir="rtl"] .launcher { padding: 10px 10px 10px 18px; }
+.launcher .av { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(160deg, #EDC3D3, var(--rose)); display: grid; place-items: center; font: 400 .875rem/1 "Marcellus", serif; color: #fff; }
+.chat { position: fixed; z-index: 50; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); inset-inline-end: max(18px, env(safe-area-inset-right, 0px)); width: min(390px, calc(100vw - 32px)); height: min(600px, calc(100dvh - 96px)); background: var(--surface); border: 1px solid var(--line); border-radius: 22px; box-shadow: 0 30px 70px -20px rgba(46, 26, 36, .5); display: flex; flex-direction: column; overflow: hidden; }
+@media (max-width: 480px) { .chat, .launcher { inset-inline-end: 16px; } }
+.chat-head { display: flex; align-items: center; gap: 12px; padding: 14px 14px 14px 16px; background: var(--dark); color: var(--on-dark); }
+.chat-head .av { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(160deg, #EDC3D3, var(--rose)); display: grid; place-items: center; font: 400 1rem/1 "Marcellus", serif; color: #fff; flex: none; }
+.chat-head .t { font-weight: 600; line-height: 1.2; }
+.chat-head .s { font-size: .8125rem; opacity: .8; display: flex; align-items: center; gap: 6px; }
+.chat-head .s i { width: 7px; height: 7px; border-radius: 50%; background: #73D6A1; }
+.chat-close { margin-inline-start: auto; background: none; border: 0; color: var(--on-dark); font-size: 1.625rem; line-height: 1; cursor: pointer; padding: 4px 8px; border-radius: 8px; }
+.chat-close:hover { background: rgba(255, 255, 255, .1); }
+.chat-log { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: var(--bg); }
+.msg { max-width: 86%; padding: 10px 14px; border-radius: 16px; font-size: .9375rem; line-height: 1.5; white-space: pre-line; }
+.msg.bot { background: var(--surface); border: 1px solid var(--line); border-end-start-radius: 4px; align-self: flex-start; }
+.msg.me { background: var(--rose); color: #fff; border-end-end-radius: 4px; align-self: flex-end; }
+.quick { display: flex; flex-wrap: wrap; gap: 6px; align-self: flex-start; max-width: 100%; }
+.quick button { border: 1px solid var(--rose); color: var(--rose); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-size: .875rem; cursor: pointer; font-weight: 500; }
+.quick button:hover { background: var(--rose-soft); }
+.rec { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; align-items: center; max-width: 92%; align-self: flex-start; width: 100%; }
+.rec b { font-weight: 600; }
+.rec .meta { color: var(--muted); font-size: .8125rem; grid-column: 1; }
+.rec button { grid-column: 2; grid-row: 1 / span 2; border: 0; background: var(--rose); color: #fff; border-radius: 999px; padding: 7px 12px; font-size: .8125rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.rec button:hover { background: var(--rose-dark); }
+.typing { align-self: flex-start; display: flex; gap: 4px; padding: 13px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; }
+.typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); animation: blink 1s infinite; }
+.typing i:nth-child(2) { animation-delay: .15s; } .typing i:nth-child(3) { animation-delay: .3s; }
+@keyframes blink { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+.chat-form { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--line); background: var(--surface); }
+.chat-form input { flex: 1; min-width: 0; font: inherit; padding: 10px 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); color: var(--ink); }
+.chat-form input:focus { outline: none; border-color: var(--rose); }
+.chat-form button { border: 0; background: var(--rose); color: #fff; border-radius: 999px; padding: 0 16px; font-weight: 600; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<div class="demo-bar" dir="ltr">
+  <div class="wrap demo-row">
+    <span><b>Demo project</b> by Samah Elashry · Fictional salon, nothing is sent</span>
+    <a href="../">← Back to portfolio</a>
+  </div>
+</div>
+
+<header class="site">
+  <div class="wrap head-row">
+    <a class="logo" href="#top"><b>LYLA</b><span data-i18n="logo.sub">beauty lounge</span></a>
+    <nav class="main" aria-label="Main">
+      <a href="#treatments" data-i18n="nav.treat">Treatments</a>
+      <a href="#book" data-i18n="nav.book">Book</a>
+      <a href="#visit" data-i18n="nav.visit">Visit</a>
+    </nav>
+    <button class="lang-btn" id="lang-btn" type="button" data-i18n="lang">العربية</button>
+  </div>
+</header>
+
+<main id="top">
+  <section class="wrap hero">
+    <div class="hero-copy">
+      <p class="kicker" data-i18n="hero.k">Jumeirah · Dubai · Ladies only</p>
+      <h1 data-i18n="hero.t">Beauty rituals, made for you</h1>
+      <p class="lead" data-i18n="hero.l">Facials, hair, nails and our Moroccan hammam, by a team that takes its time. Not sure what to choose? Our assistant will help you.</p>
+      <div class="ctas">
+        <a class="btn" href="#book" data-i18n="cta.book">Book a treatment</a>
+        <button class="btn ghost" type="button" id="hero-ask" data-i18n="cta.ask">Ask our assistant</button>
+      </div>
+    </div>
+    <div class="hero-art">
+      <div class="arch" aria-hidden="true"><div class="floor"></div></div>
+      <button type="button" class="chip-float ask" id="chip-ask"><span class="av" aria-hidden="true"></span><span data-i18n="chip.ask">Which facial is right for me?</span></button>
+      <div class="chip-float open"><i aria-hidden="true"></i><span data-i18n="chip.open">Open today · 10:00 – 22:00</span></div>
+    </div>
+  </section>
+
+  <section class="block" id="treatments">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2 data-i18n="tr.t">Treatments &amp; prices</h2>
+        <p data-i18n="tr.l">Prices in AED, VAT included.</p>
+      </div>
+      <div class="cats" id="cats"></div>
+    </div>
+  </section>
+
+  <section class="block" id="book">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2 data-i18n="bk.t">Book your visit</h2>
+        <p data-i18n="bk.l">Pick a treatment and a time. We confirm every booking on WhatsApp.</p>
+      </div>
+      <div class="book-grid">
+        <div class="form-card">
+          <form id="book-form" novalidate>
+            <div style="display:flex;flex-direction:column;gap:18px">
+              <div class="field">
+                <label for="f-treat" data-i18n="f.treat">Treatment</label>
+                <select id="f-treat"></select>
+              </div>
+              <div class="field">
+                <label for="f-date" data-i18n="f.date">Date</label>
+                <input type="date" id="f-date">
+              </div>
+              <div class="field">
+                <span class="lbl" id="slots-label" data-i18n="f.time">Time</span>
+                <div class="slots" id="slots" role="group" aria-labelledby="slots-label"></div>
+              </div>
+              <div class="row2">
+                <div class="field">
+                  <label for="f-name" data-i18n="f.name">Full name</label>
+                  <input type="text" id="f-name" autocomplete="name">
+                </div>
+                <div class="field">
+                  <label for="f-phone" data-i18n="f.phone">Mobile (WhatsApp)</label>
+                  <input type="tel" id="f-phone" autocomplete="tel" placeholder="050 123 4567" dir="ltr">
+                </div>
+              </div>
+              <p class="err" id="f-err" role="alert"></p>
+              <button class="btn" type="submit" data-i18n="f.submit">Request booking</button>
+            </div>
+          </form>
+          <div class="confirm" id="confirm" hidden>
+            <div class="tick" aria-hidden="true">✓</div>
+            <h3 data-i18n="ok.t">Request received</h3>
+            <div class="summary" id="confirm-summary"></div>
+            <p data-i18n="ok.l">We'll confirm on WhatsApp within the hour.</p>
+            <small data-i18n="ok.demo">Demo: nothing was sent.</small>
+            <button class="btn ghost" type="button" id="book-again" data-i18n="ok.again">Book another treatment</button>
+          </div>
+        </div>
+        <aside class="visit" id="visit">
+          <h3 data-i18n="v.t">Visit us</h3>
+          <dl>
+            <div><dt data-i18n="v.h">Opening hours</dt><dd data-i18n="v.hours">Saturday – Thursday 10:00 – 22:00
+Friday 14:00 – 22:00</dd></div>
+            <div><dt data-i18n="v.a">Address</dt><dd data-i18n="v.addr">Jumeirah Beach Road, Dubai
+Free parking for clients</dd></div>
+            <div><dt data-i18n="v.n">Good to know</dt><dd data-i18n="v.note">Ladies only salon. Please arrive 10 minutes before your appointment.</dd></div>
+          </dl>
+        </aside>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap" data-i18n="foot">© 2026 Lyla Beauty Lounge, a fictional brand created for a portfolio demo.</div>
+</footer>
+
+<button class="launcher" id="launcher" type="button"><span class="av" aria-hidden="true">L</span><span data-i18n="c.launch">Ask Lyla</span></button>
+
+<section class="chat" id="chat" hidden aria-label="Lyla assistant">
+  <div class="chat-head">
+    <span class="av" aria-hidden="true">L</span>
+    <div>
+      <div class="t" data-i18n="c.title">Lyla assistant</div>
+      <div class="s"><i aria-hidden="true"></i><span data-i18n="c.status">Replies instantly</span></div>
+    </div>
+    <button class="chat-close" id="chat-close" type="button" aria-label="Close">×</button>
+  </div>
+  <div class="chat-log" id="chat-log" aria-live="polite"></div>
+  <form class="chat-form" id="chat-form">
+    <input id="chat-input" type="text" autocomplete="off" aria-label="Message" data-i18n-ph="c.ph" placeholder="Type a message…">
+    <button type="submit" data-i18n="c.send">Send</button>
+  </form>
+</section>
+
+<script>
+(function () {
+  "use strict";
+  var T = {
+    en: {
+      "logo.sub": "beauty lounge", "nav.treat": "Treatments", "nav.book": "Book", "nav.visit": "Visit", "lang": "العربية",
+      "hero.k": "Jumeirah · Dubai · Ladies only",
+      "hero.t": "Beauty rituals, made for you",
+      "hero.l": "Facials, hair, nails and our Moroccan hammam, by a team that takes its time. Not sure what to choose? Our assistant will help you.",
+      "cta.book": "Book a treatment", "cta.ask": "Ask our assistant",
+      "chip.ask": "Which facial is right for me?", "chip.open": "Open today · 10:00 – 22:00",
+      "tr.t": "Treatments & prices", "tr.l": "Prices in AED, VAT included.",
+      "bk.t": "Book your visit", "bk.l": "Pick a treatment and a time. We confirm every booking on WhatsApp.",
+      "f.treat": "Treatment", "f.choose": "Choose a treatment", "f.date": "Date", "f.time": "Time", "f.name": "Full name", "f.phone": "Mobile (WhatsApp)", "f.submit": "Request booking",
+      "e.treat": "Choose a treatment.", "e.date": "Choose a date.", "e.time": "Choose a time.", "e.name": "Enter your name.", "e.phone": "Enter a UAE mobile number, for example 050 123 4567.",
+      "ok.t": "Request received", "ok.l": "We'll confirm on WhatsApp within the hour.", "ok.demo": "Demo: nothing was sent.", "ok.again": "Book another treatment",
+      "v.t": "Visit us", "v.h": "Opening hours", "v.hours": "Saturday – Thursday 10:00 – 22:00\nFriday 14:00 – 22:00",
+      "v.a": "Address", "v.addr": "Jumeirah Beach Road, Dubai\nFree parking for clients",
+      "v.n": "Good to know", "v.note": "Ladies only salon. Please arrive 10 minutes before your appointment.",
+      "foot": "© 2026 Lyla Beauty Lounge, a fictional brand created for a portfolio demo.",
+      "min": "min", "aed": "AED", "from": "from", "book": "Book",
+      "c.launch": "Ask Lyla", "c.title": "Lyla assistant", "c.status": "Replies instantly", "c.ph": "Type a message…", "c.send": "Send",
+      "b.hi": "Hi! I'm Lyla's assistant. I can help you choose a treatment, check prices or book a visit.",
+      "q.find": "Help me choose", "q.prices": "Prices", "q.hours": "Opening hours", "q.where": "Location", "q.book": "Book",
+      "b.concern": "What would you like to focus on?",
+      "c.dry": "Dry or tired skin", "c.acne": "Breakouts", "c.hair": "Hair care", "c.nails": "Nails", "c.relax": "Relaxation", "c.event": "Special event",
+      "b.rec": "Here's what I'd suggest:", "b.bookthis": "Book this",
+      "b.prefilled": "Done! I've added {t} to the booking form. Now pick a date and a time.",
+      "b.prices": "Starting prices:",
+      "b.hours": "We're open Saturday to Thursday from 10:00 to 22:00, and Friday from 14:00 to 22:00.",
+      "b.where": "We're on Jumeirah Beach Road, Dubai. Parking is free for clients.",
+      "b.which": "Which treatment would you like to book?",
+      "b.else": "Can I help with anything else?",
+      "b.fallback": "I'm a demo assistant, so I only know about Lyla's treatments, prices, hours and bookings. Try one of these:",
+      "b.hello": "Hello! How can I help you today?",
+      "b.thanks": "You're welcome! See you soon at Lyla."
+    },
+    ar: {
+      "logo.sub": "صالون تجميل", "nav.treat": "العلاجات", "nav.book": "الحجز", "nav.visit": "زورينا", "lang": "English",
+      "hero.k": "جميرا · دبي · للسيدات فقط",
+      "hero.t": "طقوس جمال مصمّمة لكِ",
+      "hero.l": "عناية بالبشرة والشعر والأظافر وحمّامنا المغربي، مع فريق يمنحكِ وقته. لستِ متأكدة مما تختارين؟ مساعدتنا ستساعدكِ.",
+      "cta.book": "احجزي جلسة", "cta.ask": "اسألي المساعدة",
+      "chip.ask": "أي علاج للبشرة يناسبني؟", "chip.open": "مفتوح اليوم · 10:00 – 22:00",
+      "tr.t": "العلاجات والأسعار", "tr.l": "الأسعار بالدرهم الإماراتي وتشمل ضريبة القيمة المضافة.",
+      "bk.t": "احجزي زيارتكِ", "bk.l": "اختاري العلاج والوقت، ونؤكد كل حجز عبر واتساب.",
+      "f.treat": "العلاج", "f.choose": "اختاري العلاج", "f.date": "التاريخ", "f.time": "الوقت", "f.name": "الاسم الكامل", "f.phone": "رقم الجوال (واتساب)", "f.submit": "أرسلي طلب الحجز",
+      "e.treat": "اختاري العلاج.", "e.date": "اختاري التاريخ.", "e.time": "اختاري الوقت.", "e.name": "أدخلي اسمكِ.", "e.phone": "أدخلي رقم جوال إماراتي، مثل 050 123 4567.",
+      "ok.t": "تم استلام طلبكِ", "ok.l": "سنؤكد موعدكِ عبر واتساب خلال ساعة.", "ok.demo": "نسخة تجريبية: لم يُرسل أي شيء.", "ok.again": "احجزي علاجاً آخر",
+      "v.t": "زورينا", "v.h": "ساعات العمل", "v.hours": "من السبت إلى الخميس 10:00 – 22:00\nالجمعة 14:00 – 22:00",
+      "v.a": "العنوان", "v.addr": "شارع جميرا، دبي\nموقف مجاني للعميلات",
+      "v.n": "معلومات مفيدة", "v.note": "صالون للسيدات فقط. يُرجى الحضور قبل الموعد بعشر دقائق.",
+      "foot": "© 2026 صالون ليلى، علامة خيالية صُممت لعرض تجريبي في ملف أعمال.",
+      "min": "دقيقة", "aed": "درهم", "from": "من", "book": "احجزي",
+      "c.launch": "اسألي ليلى", "c.title": "مساعدة ليلى", "c.status": "ترد فوراً", "c.ph": "اكتبي رسالة…", "c.send": "إرسال",
+      "b.hi": "أهلاً! أنا مساعدة ليلى. أستطيع مساعدتكِ في اختيار العلاج ومعرفة الأسعار وحجز موعد.",
+      "q.find": "ساعديني أختار", "q.prices": "الأسعار", "q.hours": "ساعات العمل", "q.where": "الموقع", "q.book": "حجز موعد",
+      "b.concern": "على ماذا تريدين التركيز؟",
+      "c.dry": "بشرة جافة أو متعبة", "c.acne": "حبوب وشوائب", "c.hair": "العناية بالشعر", "c.nails": "الأظافر", "c.relax": "الاسترخاء", "c.event": "مناسبة خاصة",
+      "b.rec": "هذا ما أقترحه عليكِ:", "b.bookthis": "احجزي هذا",
+      "b.prefilled": "تم! أضفتُ {t} إلى نموذج الحجز. اختاري الآن التاريخ والوقت.",
+      "b.prices": "الأسعار تبدأ من:",
+      "b.hours": "نستقبلكِ من السبت إلى الخميس من 10:00 إلى 22:00، ويوم الجمعة من 14:00 إلى 22:00.",
+      "b.where": "نحن في شارع جميرا، دبي. الموقف مجاني للعميلات.",
+      "b.which": "أي علاج تريدين حجزه؟",
+      "b.else": "هل يمكنني مساعدتكِ في شيء آخر؟",
+      "b.fallback": "أنا مساعدة تجريبية، أعرف فقط علاجات ليلى وأسعارها وساعات العمل والحجز. جربي أحد هذه الخيارات:",
+      "b.hello": "أهلاً بكِ! كيف أستطيع مساعدتكِ اليوم؟",
+      "b.thanks": "على الرحب والسعة! نراكِ قريباً في ليلى."
+    }
+  };
+
+  var CATS = [
+    { id: "face", en: "Face", ar: "الوجه" },
+    { id: "hair", en: "Hair", ar: "الشعر" },
+    { id: "body", en: "Body & hammam", ar: "الجسم والحمّام" },
+    { id: "hands", en: "Hands & feet", ar: "اليدان والقدمان" },
+    { id: "lashes", en: "Lashes & brows", ar: "الرموش والحواجب" },
+    { id: "bridal", en: "Bridal", ar: "العروس" }
+  ];
+  var TR = [
+    { id: "hydra", cat: "face", en: "Signature Hydrafacial", ar: "هيدرافيشل المميز", price: 450, dur: 60 },
+    { id: "clean", cat: "face", en: "Deep Cleansing Facial", ar: "تنظيف عميق للبشرة", price: 320, dur: 50 },
+    { id: "keratin", cat: "hair", en: "Keratin Treatment", ar: "علاج الكيراتين", price: 650, dur: 120 },
+    { id: "blow", cat: "hair", en: "Blow-dry & Styling", ar: "تجفيف وتصفيف الشعر", price: 150, dur: 45 },
+    { id: "hammam", cat: "body", en: "Moroccan Hammam Ritual", ar: "طقوس الحمّام المغربي", price: 380, dur: 75 },
+    { id: "massage", cat: "body", en: "Relaxing Massage", ar: "مساج الاسترخاء", price: 340, dur: 60 },
+    { id: "mani", cat: "hands", en: "Gel Manicure", ar: "مانيكير جل", price: 140, dur: 45 },
+    { id: "pedi", cat: "hands", en: "Spa Pedicure", ar: "باديكير سبا", price: 180, dur: 60 },
+    { id: "lash", cat: "lashes", en: "Lash Lift & Tint", ar: "رفع وصبغ الرموش", price: 260, dur: 60 },
+    { id: "brow", cat: "lashes", en: "Brow Threading", ar: "تشكيل الحواجب بالخيط", price: 70, dur: 20 },
+    { id: "bridal", cat: "bridal", en: "Bridal Glow Package", ar: "باقة إشراقة العروس", price: 1450, dur: 240 },
+    { id: "party", cat: "bridal", en: "Bridal Party, per guest", ar: "تجهيز المرافقات، للشخص", price: 390, dur: 90 }
+  ];
+  var REC = { dry: ["hydra", "hammam"], acne: ["clean", "hydra"], hair: ["keratin", "blow"], nails: ["mani", "pedi"], relax: ["hammam", "massage"], event: ["bridal", "blow", "lash"] };
+  var KW = {
+    concern: {
+      acne: ["acne", "pimple", "breakout", "spot", "bouton", "حبوب", "حب الشباب", "شوائب"],
+      dry: ["dry", "tired", "dull", "facial", "sèche", "fatigu", "جاف", "جافة", "متعبة", "باهتة", "بشرة"],
+      hair: ["hair", "keratin", "blow", "cheveu", "شعر", "كيراتين"],
+      nails: ["nail", "manicure", "pedicure", "ongle", "أظافر", "مانيكير", "باديكير"],
+      relax: ["relax", "massage", "hammam", "spa", "stress", "détente", "استرخاء", "حمام", "حمّام", "مساج"],
+      event: ["wedding", "event", "party", "bride", "bridal", "mariage", "soirée", "عرس", "زفاف", "مناسبة", "حفلة", "عروس"]
+    },
+    thanks: ["thank", "merci", "شكرا", "شكراً"],
+    prices: ["price", "cost", "how much", "prix", "combien", "tarif", "سعر", "أسعار", "اسعار", "كم"],
+    hours: ["hour", "open", "close", "when", "horaire", "ouvert", "ساعات", "متى", "مفتوح", "دوام"],
+    where: ["where", "address", "location", "parking", "adresse", "où", "أين", "وين", "عنوان", "موقع", "موقف"],
+    book: ["book", "appointment", "reserv", "rendez", "réserv", "حجز", "موعد", "احجز"],
+    hello: ["hi", "hello", "hey", "salam", "bonjour", "مرحبا", "السلام", "أهلا", "اهلا"]
+  };
+  function rx(list) {
+    var esc = list.map(function (s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }).join("|");
+    return new RegExp("(?:^|[^\\p{L}])(?:" + esc + ")", "iu");
+  }
+  var RX = { concern: {} };
+  Object.keys(KW.concern).forEach(function (k) { RX.concern[k] = rx(KW.concern[k]); });
+  ["thanks", "prices", "hours", "where", "book", "hello"].forEach(function (k) { RX[k] = rx(KW[k]); });
+
+  var lang = "en";
+  function t(k) { return (T[lang][k] != null ? T[lang][k] : T.en[k]) || k; }
+  function nm(o) { return o[lang] || o.en; }
+  function $(s) { return document.querySelector(s); }
+  function price(n) { return lang === "ar" ? n.toLocaleString("en-US") + " " + t("aed") : t("aed") + " " + n.toLocaleString("en-US"); }
+  var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------- Treatments ---------- */
+  function renderCats() {
+    var html = CATS.map(function (c) {
+      var items = TR.filter(function (x) { return x.cat === c.id; }).map(function (x) {
+        return '<div class="item"><span class="name">' + nm(x) + '</span><span class="price">' + price(x.price) + '</span>' +
+          '<span class="dur">' + x.dur + ' ' + t("min") + '</span>' +
+          '<button type="button" class="book-link" data-book="' + x.id + '">' + t("book") + '</button></div>';
+      }).join("");
+      return '<article class="cat"><h3>' + nm(c) + '</h3>' + items + '</article>';
+    }).join("");
+    $("#cats").innerHTML = html;
+  }
+  $("#cats").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-book]");
+    if (b) { selectTreatment(b.dataset.book); $("#book").scrollIntoView({ behavior: reduced ? "auto" : "smooth" }); }
+  });
+
+  /* ---------- Booking form ---------- */
+  var sel = $("#f-treat"), dateIn = $("#f-date"), slotsEl = $("#slots"), chosenSlot = null;
+  function renderSelect() {
+    var cur = sel.value;
+    var html = '<option value="">' + t("f.choose") + '</option>' + CATS.map(function (c) {
+      return '<optgroup label="' + nm(c) + '">' + TR.filter(function (x) { return x.cat === c.id; }).map(function (x) {
+        return '<option value="' + x.id + '">' + nm(x) + ' · ' + price(x.price) + '</option>';
+      }).join("") + '</optgroup>';
+    }).join("");
+    sel.innerHTML = html;
+    sel.value = cur;
+  }
+  function selectTreatment(id) { showForm(); sel.value = id; $("#f-err").textContent = ""; }
+  function iso(d) { var m = d.getMonth() + 1, day = d.getDate(); return d.getFullYear() + "-" + (m < 10 ? "0" : "") + m + "-" + (day < 10 ? "0" : "") + day; }
+  var today = new Date(); today.setHours(0, 0, 0, 0);
+  var tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+  dateIn.min = iso(today);
+  dateIn.value = iso(tomorrow);
+  function renderSlots() {
+    if (!dateIn.value) { slotsEl.innerHTML = ""; return; }
+    var parts = dateIn.value.split("-"), d = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+    var start = d.getDay() === 5 ? 14 : 10, seed = +parts[2] * 7 + +parts[1] * 3, html = "";
+    for (var h = start; h <= 21; h++) {
+      var label = (h < 10 ? "0" : "") + h + ":00";
+      var taken = ((seed + h * 13) % 5) === 0;
+      html += '<button type="button" class="slot" data-slot="' + label + '" aria-pressed="' + (chosenSlot === label && !taken) + '"' + (taken ? ' disabled title="Booked"' : "") + '>' + label + '</button>';
+    }
+    slotsEl.innerHTML = html;
+    if (chosenSlot && !slotsEl.querySelector('[data-slot="' + chosenSlot + '"]:not(:disabled)')) chosenSlot = null;
+  }
+  dateIn.addEventListener("change", function () { chosenSlot = null; renderSlots(); });
+  slotsEl.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-slot]");
+    if (!b || b.disabled) return;
+    chosenSlot = b.dataset.slot;
+    slotsEl.querySelectorAll(".slot").forEach(function (s) { s.setAttribute("aria-pressed", String(s === b)); });
+  });
+  function showForm() { $("#book-form").hidden = false; $("#confirm").hidden = true; }
+  $("#book-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var err = $("#f-err"), name = $("#f-name").value.trim(), phone = $("#f-phone").value.replace(/[\s\-()]/g, "");
+    if (!sel.value) { err.textContent = t("e.treat"); sel.focus(); return; }
+    if (!dateIn.value) { err.textContent = t("e.date"); dateIn.focus(); return; }
+    if (!chosenSlot) { err.textContent = t("e.time"); return; }
+    if (!name) { err.textContent = t("e.name"); $("#f-name").focus(); return; }
+    if (!/^(?:\+?971|0)?5\d{8}$/.test(phone)) { err.textContent = t("e.phone"); $("#f-phone").focus(); return; }
+    err.textContent = "";
+    var x = TR.filter(function (y) { return y.id === sel.value; })[0];
+    var p = dateIn.value.split("-"), d = new Date(+p[0], +p[1] - 1, +p[2]);
+    var when = d.toLocaleDateString(lang === "ar" ? "ar-AE-u-nu-latn" : "en-GB", { weekday: "long", day: "numeric", month: "long" });
+    $("#confirm-summary").textContent = nm(x) + " · " + x.dur + " " + t("min") + "\n" + when + " · " + chosenSlot + "\n" + name + " · " + $("#f-phone").value.trim();
+    $("#book-form").hidden = true;
+    $("#confirm").hidden = false;
+  });
+  $("#book-again").addEventListener("click", function () {
+    $("#book-form").reset(); dateIn.value = iso(tomorrow); chosenSlot = null; renderSlots(); showForm();
+  });
+
+  /* ---------- Assistant ---------- */
+  var chat = $("#chat"), log = $("#chat-log"), launcher = $("#launcher"), started = false;
+  function scroll() { log.scrollTop = log.scrollHeight; }
+  function addMsg(text, who) { var d = document.createElement("div"); d.className = "msg " + who; d.textContent = text; log.appendChild(d); scroll(); return d; }
+  function clearQuick() { log.querySelectorAll(".quick").forEach(function (q) { q.remove(); }); }
+  function addQuick(opts) {
+    var w = document.createElement("div"); w.className = "quick";
+    opts.forEach(function (o) {
+      var b = document.createElement("button"); b.type = "button"; b.textContent = o.label;
+      b.addEventListener("click", function () { clearQuick(); addMsg(o.label, "me"); o.fn(); });
+      w.appendChild(b);
+    });
+    log.appendChild(w); scroll();
+  }
+  function bot(fn) {
+    var ty = document.createElement("div"); ty.className = "typing"; ty.innerHTML = "<i></i><i></i><i></i>";
+    log.appendChild(ty); scroll();
+    setTimeout(function () { ty.remove(); fn(); scroll(); }, reduced ? 0 : 600);
+  }
+  function mainQuick() {
+    addQuick([
+      { label: t("q.find"), fn: askConcern }, { label: t("q.prices"), fn: showPrices },
+      { label: t("q.hours"), fn: showHours }, { label: t("q.where"), fn: showWhere }, { label: t("q.book"), fn: askWhich }
+    ]);
+  }
+  function greet() { bot(function () { addMsg(t("b.hi"), "bot"); mainQuick(); }); }
+  function askConcern() {
+    bot(function () {
+      addMsg(t("b.concern"), "bot");
+      addQuick(["dry", "acne", "hair", "nails", "relax", "event"].map(function (c) { return { label: t("c." + c), fn: function () { recommend(c); } }; }));
+    });
+  }
+  function addRec(id) {
+    var x = TR.filter(function (y) { return y.id === id; })[0];
+    var r = document.createElement("div"); r.className = "rec";
+    r.innerHTML = "<b></b><button type='button'></button><span class='meta'></span>";
+    r.querySelector("b").textContent = nm(x);
+    r.querySelector(".meta").textContent = x.dur + " " + t("min") + " · " + price(x.price);
+    var b = r.querySelector("button"); b.textContent = t("b.bookthis");
+    b.addEventListener("click", function () { prefill(id); });
+    log.appendChild(r);
+  }
+  function recommend(c) { bot(function () { addMsg(t("b.rec"), "bot"); REC[c].forEach(addRec); followUp(); }); }
+  function followUp() { addMsg(t("b.else"), "bot"); mainQuick(); }
+  function prefill(id) {
+    var x = TR.filter(function (y) { return y.id === id; })[0];
+    clearQuick();
+    selectTreatment(id);
+    addMsg(nm(x), "me");
+    bot(function () {
+      addMsg(t("b.prefilled").replace("{t}", nm(x)), "bot");
+      if (window.innerWidth < 720) closeChat();
+      $("#book").scrollIntoView({ behavior: reduced ? "auto" : "smooth" });
+    });
+  }
+  function showPrices() {
+    bot(function () {
+      var lines = CATS.map(function (c) {
+        var min = Math.min.apply(null, TR.filter(function (x) { return x.cat === c.id; }).map(function (x) { return x.price; }));
+        return "· " + nm(c) + ": " + t("from") + " " + price(min);
+      });
+      addMsg(t("b.prices") + "\n" + lines.join("\n"), "bot"); mainQuick();
+    });
+  }
+  function showHours() { bot(function () { addMsg(t("b.hours"), "bot"); mainQuick(); }); }
+  function showWhere() { bot(function () { addMsg(t("b.where"), "bot"); mainQuick(); }); }
+  function askWhich() {
+    bot(function () {
+      addMsg(t("b.which"), "bot");
+      addQuick(TR.map(function (x) { return { label: nm(x), fn: function () { prefillFromQuick(x.id); } }; }));
+    });
+  }
+  function prefillFromQuick(id) {
+    var x = TR.filter(function (y) { return y.id === id; })[0];
+    selectTreatment(id);
+    bot(function () {
+      addMsg(t("b.prefilled").replace("{t}", nm(x)), "bot");
+      if (window.innerWidth < 720) closeChat();
+      $("#book").scrollIntoView({ behavior: reduced ? "auto" : "smooth" });
+    });
+  }
+  function handleText(s) {
+    var q = " " + s.toLowerCase();
+    var keys = Object.keys(RX.concern);
+    for (var i = 0; i < keys.length; i++) { if (RX.concern[keys[i]].test(q)) return recommend(keys[i]); }
+    if (RX.thanks.test(q)) return bot(function () { addMsg(t("b.thanks"), "bot"); });
+    if (RX.prices.test(q)) return showPrices();
+    if (RX.hours.test(q)) return showHours();
+    if (RX.where.test(q)) return showWhere();
+    if (RX.book.test(q)) return askWhich();
+    if (RX.hello.test(q)) return bot(function () { addMsg(t("b.hello"), "bot"); mainQuick(); });
+    bot(function () { addMsg(t("b.fallback"), "bot"); mainQuick(); });
+  }
+  $("#chat-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var inp = $("#chat-input"), v = inp.value.trim();
+    if (!v) return;
+    inp.value = ""; clearQuick(); addMsg(v, "me"); handleText(v);
+  });
+  function openChat(thenFind) {
+    chat.hidden = false; launcher.hidden = true;
+    if (!started) { started = true; greet(); }
+    if (thenFind) { clearQuick(); addMsg(t("q.find"), "me"); askConcern(); }
+    setTimeout(function () { $("#chat-input").focus({ preventScroll: true }); }, 50);
+  }
+  function closeChat() { chat.hidden = true; launcher.hidden = false; launcher.focus({ preventScroll: true }); }
+  launcher.addEventListener("click", function () { openChat(false); });
+  $("#hero-ask").addEventListener("click", function () { openChat(false); });
+  $("#chip-ask").addEventListener("click", function () { var first = !started; openChat(false); if (first) setTimeout(function () { clearQuick(); addMsg(t("q.find"), "me"); askConcern(); }, reduced ? 10 : 700); else { clearQuick(); addMsg(t("q.find"), "me"); askConcern(); } });
+  $("#chat-close").addEventListener("click", closeChat);
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !chat.hidden) closeChat(); });
+
+  /* ---------- Language ---------- */
+  function applyLang(l) {
+    lang = l;
+    document.documentElement.lang = l;
+    document.documentElement.dir = l === "ar" ? "rtl" : "ltr";
+    document.querySelectorAll("[data-i18n]").forEach(function (el) { el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll("[data-i18n-ph]").forEach(function (el) { el.placeholder = t(el.dataset.i18nPh); });
+    renderCats(); renderSelect(); renderSlots();
+    log.innerHTML = "";
+    if (started) greet();
+    try { localStorage.setItem("lyla-lang", l); } catch (e) {}
+  }
+  $("#lang-btn").addEventListener("click", function () { applyLang(lang === "en" ? "ar" : "en"); });
+  var initial = "en";
+  if (location.hash === "#ar") initial = "ar";
+  else { try { if (localStorage.getItem("lyla-lang") === "ar") initial = "ar"; } catch (e) {} }
+  applyLang(initial);
+})();
+</script>
+</body>
+</html>

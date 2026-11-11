@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ScamCheck · Demo by Samah Elashry</title>
+<meta name="description" content="Demo project by Samah Elashry: paste a suspicious SMS, email or WhatsApp message and see the red flags. Works in English, French and Arabic.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,600..800&family=JetBrains+Mono:wght@400;500&family=Public+Sans:wght@400;500;600&display=swap">
+<style>
+/* ScamCheck (demo tool). Single light theme by choice.
+   Layout: message input on the left, verdict + red flags on the right, method notes below. */
+:root {
+  color-scheme: light;
+  --bg: #F1F2F8;
+  --surface: #FFFFFF;
+  --ink: #151833;
+  --muted: #585D78;
+  --line: #D9DCEA;
+  --accent: #3540C4;
+  --accent-dark: #262F9E;
+  --accent-soft: #E4E6FB;
+  --red: #BE2A2A;
+  --red-soft: #FBE3E1;
+  --amber: #9A5E06;
+  --amber-soft: #FCEDD5;
+  --green: #1E7848;
+  --green-soft: #DDF1E5;
+  --display: "Archivo", "Arial Narrow", "Segoe UI", system-ui, sans-serif;
+  --body: "Public Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 1rem/1.6 var(--body); -webkit-font-smoothing: antialiased; }
+[hidden] { display: none !important; }
+h1, h2, h3 { margin: 0; font-family: var(--display); text-wrap: balance; }
+p { margin: 0; }
+button { font: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+.wrap { max-width: 1160px; margin-inline: auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+.demo-bar { background: var(--ink); color: #E8EAF7; font-size: .8125rem; font-weight: 500; padding-top: env(safe-area-inset-top, 0px); }
+.demo-row { display: flex; gap: 6px 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding-block: 9px; }
+.demo-bar b { color: #AEB4FF; font-weight: 600; }
+.demo-bar a { color: #E8EAF7; text-decoration: none; }
+.demo-bar a:hover { text-decoration: underline; }
+
+header.top { padding-block: 22px 8px; }
+.logo { display: inline-flex; align-items: center; gap: 10px; font: 800 1.25rem/1 var(--display); font-stretch: 112%; letter-spacing: -.01em; }
+.logo svg { flex: none; }
+
+.hero { padding-block: 26px 22px; display: flex; flex-direction: column; gap: 12px; }
+.hero > * { max-width: 760px; }
+.hero h1 { font-size: clamp(2.125rem, 1.3rem + 3vw, 3.5rem); font-weight: 800; font-stretch: 115%; line-height: 1.02; letter-spacing: -.02em; }
+.hero p { font-size: 1.125rem; color: var(--muted); max-width: 60ch; }
+
+.tool { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 20px; align-items: start; padding-bottom: 56px; }
+@media (max-width: 900px) { .tool { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 22px; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+.lbl { font-weight: 600; font-size: .9375rem; }
+textarea { width: 100%; min-height: 200px; resize: vertical; font: 400 .9375rem/1.55 var(--mono); padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--ink); }
+textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.samples { display: flex; flex-direction: column; gap: 8px; }
+.samples .row { display: flex; flex-wrap: wrap; gap: 6px; }
+.samples button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-size: .8125rem; cursor: pointer; color: var(--ink); }
+.samples button:hover { border-color: var(--accent); color: var(--accent); }
+.samples button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-dark); font-weight: 600; }
+.actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.btn { border: 0; background: var(--accent); color: #fff; border-radius: 12px; padding: 13px 22px; font-weight: 600; cursor: pointer; }
+.btn:hover { background: var(--accent-dark); }
+.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.btn.ghost:hover { border-color: var(--ink); }
+.privacy { display: flex; gap: 10px; align-items: flex-start; font-size: .8125rem; color: var(--muted); background: var(--bg); border-radius: 12px; padding: 10px 12px; }
+.privacy svg { flex: none; margin-top: 2px; }
+
+/* Result */
+.verdict { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 18px; align-items: center; }
+@media (max-width: 480px) { .verdict { grid-template-columns: minmax(0, 1fr); justify-items: start; } }
+.gauge { width: 170px; max-width: 100%; }
+.gauge text { font-family: var(--display); }
+.v-pill { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px; border-radius: 999px; font-weight: 600; font-size: .8125rem; }
+.v-pill i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.v-title { font: 800 1.75rem/1.1 var(--display); font-stretch: 110%; margin-top: 8px; }
+.v-sub { color: var(--muted); margin-top: 4px; }
+.lvl-high .v-pill { background: var(--red-soft); color: var(--red); }
+.lvl-mid .v-pill { background: var(--amber-soft); color: var(--amber); }
+.lvl-low .v-pill { background: var(--green-soft); color: var(--green); }
+.sub-h { font: 700 1rem/1.3 var(--display); font-stretch: 105%; margin-bottom: 8px; }
+.flags { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0; border-top: 1px solid var(--line); }
+.flags li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding-block: 10px; border-bottom: 1px solid var(--line); }
+.flags b { font-weight: 600; }
+.flags span { color: var(--muted); font-size: .875rem; grid-column: 1; }
+.flags em { font: 500 .75rem/1 var(--mono); font-style: normal; color: var(--red); background: var(--red-soft); padding: 4px 7px; border-radius: 6px; grid-column: 2; grid-row: 1; align-self: start; }
+.none { color: var(--muted); font-size: .9375rem; padding-block: 8px; }
+.hl { font: 400 .875rem/1.65 var(--mono); background: var(--bg); border-radius: 12px; padding: 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.hl mark { background: var(--red-soft); color: var(--ink); border-bottom: 2px solid var(--red); border-radius: 3px; padding: 0 1px; }
+.advice { border-radius: 12px; padding: 14px 16px; font-size: .9375rem; }
+.lvl-high .advice { background: var(--red-soft); }
+.lvl-mid .advice { background: var(--amber-soft); }
+.lvl-low .advice { background: var(--green-soft); }
+.advice b { display: block; margin-bottom: 2px; }
+
+/* Method */
+.method { border-top: 1px solid var(--line); padding-block: 56px 72px; }
+.method h2 { font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.125rem); font-weight: 800; font-stretch: 110%; margin-bottom: 24px; }
+.cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+@media (max-width: 860px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+.col { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.col h3 { font-size: 1.125rem; font-weight: 700; font-stretch: 105%; }
+.col p, .col li { color: var(--muted); font-size: .9375rem; }
+.col ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0 !important; margin-top: 4px !important; }
+.chips li { font: 500 .75rem/1 var(--mono); color: var(--ink) !important; padding: 6px 9px; border-radius: 6px; background: var(--bg); border: 1px solid var(--line); }
+</style>
+</head>
+<body>
+
+<div class="demo-bar">
+  <div class="wrap demo-row">
+    <span><b>Demo project</b> by Samah Elashry · The check runs in your browser, nothing is sent</span>
+    <a href="../">← Back to portfolio</a>
+  </div>
+</div>
+
+<header class="wrap top">
+  <span class="logo"><svg width="28" height="30" viewBox="0 0 28 30" aria-hidden="true"><path d="M14 1l12 4.5v8.6c0 7.4-5 12.9-12 15-7-2.1-12-7.6-12-15V5.5L14 1z" fill="#3540C4"/><path d="M8.5 15.2l3.8 3.8 7.4-7.6" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>ScamCheck</span>
+</header>
+
+<main>
+  <section class="wrap hero">
+    <h1>Is this message a scam?</h1>
+    <p>Paste an SMS, email or WhatsApp message. ScamCheck looks for the tricks scammers use, highlights them and tells you what to do. It understands English, French and Arabic.</p>
+  </section>
+
+  <section class="wrap tool">
+    <div class="panel">
+      <label class="lbl" for="msg">Message to check</label>
+      <textarea id="msg" spellcheck="false" placeholder="Paste the message here…"></textarea>
+      <div class="samples">
+        <span class="lbl" id="samples-lbl">Or try an example</span>
+        <div class="row" role="group" aria-labelledby="samples-lbl" id="samples"></div>
+      </div>
+      <div class="actions">
+        <button class="btn" id="check" type="button">Check message</button>
+        <button class="btn ghost" id="clear" type="button">Clear</button>
+      </div>
+      <p class="privacy"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10V7a4 4 0 018 0v3" fill="none" stroke="currentColor" stroke-width="2"/></svg><span>Your message never leaves this page. Don't paste passwords or card numbers anyway.</span></p>
+    </div>
+
+    <div class="panel" id="result" aria-live="polite">
+      <div class="verdict">
+        <svg class="gauge" viewBox="0 0 200 118" role="img" aria-labelledby="g-label">
+          <title id="g-label">Risk score</title>
+          <path d="M20 104 A80 80 0 0 1 180 104" fill="none" stroke="#E4E6F0" stroke-width="16" stroke-linecap="round"/>
+          <path id="g-arc" d="M20 104 A80 80 0 0 1 180 104" fill="none" stroke="#BE2A2A" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="0 100"/>
+          <text id="g-num" x="100" y="94" text-anchor="middle" font-size="40" font-weight="800" fill="#151833">0</text>
+          <text x="100" y="114" text-anchor="middle" font-size="11" fill="#585D78" letter-spacing="1">RISK / 100</text>
+        </svg>
+        <div>
+          <span class="v-pill" id="v-pill"><i aria-hidden="true"></i><span id="v-short">Checking</span></span>
+          <p class="v-title" id="v-title">…</p>
+          <p class="v-sub" id="v-sub"></p>
+        </div>
+      </div>
+      <div>
+        <h2 class="sub-h">Red flags</h2>
+        <ul class="flags" id="flags"></ul>
+      </div>
+      <div>
+        <h2 class="sub-h">Your message, with the red flags highlighted</h2>
+        <div class="hl" id="hl"></div>
+      </div>
+      <div class="advice" id="advice"></div>
+    </div>
+  </section>
+
+  <section class="method">
+    <div class="wrap">
+      <h2>How it works</h2>
+      <div class="cols">
+        <div class="col">
+          <h3>What it checks</h3>
+          <ul>
+            <li>Requests for codes, passwords or card details</li>
+            <li>Pressure to act fast or threats of blocking</li>
+            <li>Small fees, prizes and easy money</li>
+            <li>Shortened links, odd domain endings and look-alike domains</li>
+            <li>Moves to Telegram or a private WhatsApp</li>
+          </ul>
+        </div>
+        <div class="col">
+          <h3>Built security-first</h3>
+          <p>Every rule runs in the browser, so a message with personal details never reaches a server. Each red flag adds points, and the verdict explains exactly which words triggered it.</p>
+          <ul class="chips"><li>JavaScript</li><li>Regex</li><li>Unicode (EN · FR · AR)</li></ul>
+        </div>
+        <div class="col">
+          <h3>The full version adds</h3>
+          <ul>
+            <li>An AI explanation in plain words, in the user's language</li>
+            <li>A link reputation lookup before anyone clicks</li>
+            <li>A WhatsApp number families can forward suspicious messages to</li>
+          </ul>
+          <ul class="chips"><li>Python</li><li>OpenAI API</li><li>WhatsApp Business API</li></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  var SAMPLES = [
+    { label: "Fake parcel SMS", text: "DXB Post: your parcel is on hold due to an unpaid customs fee of AED 12.50. Pay within 24 hours or it will be returned to sender: http://dxbpost-delivery.top/pay" },
+    { label: "Fake bank alert", text: "Dear Customer, your National Bank card has been BLOCKED for security reasons. To reactivate it, verify your account and share the OTP you receive here: https://bit.ly/nb-verify-card" },
+    { label: "Job offer", text: "Hello! We are hiring for part-time online work. Earn AED 800 to 1,500 per day by liking videos. No experience needed. Contact us on Telegram: @hr_jobs_uae" },
+    { label: "Arnaque colis (FR)", text: "Votre colis n° FR3921 est bloqué en attente de paiement. Réglez 1,99 € de frais sous 24h : https://suivi-colis-fr.info/paiement" },
+    { label: "رسالة بنك (AR)", text: "عزيزي العميل، تم إيقاف بطاقتك. يرجى إرسال رمز التحقق فوراً لإعادة تفعيلها عبر الرابط: https://bank-secure-verify.xyz" },
+    { label: "Real reminder", text: "Hi Sara, your appointment at Lyla Beauty Lounge is confirmed for Thursday at 15:00. Reply C to cancel." }
+  ];
+
+  function W(list) { return new RegExp("(?<![\\p{L}\\p{N}])(?:" + list.join("|") + ")(?![\\p{L}\\p{N}])", "giu"); }
+  var RULES = [
+    { id: "cred", w: 30, title: "Asks for codes or account details", why: "Banks and official services never ask for your OTP, PIN, password or card number by message.",
+      rx: W(["otp", "one[- ]time (?:pass)?code", "pin(?: code)?", "password", "passcode", "cvv", "card number", "card details", "verify your (?:account|identity|details)", "confirm your (?:account|identity|details)", "update your (?:account|details|information)", "mot de passe", "code de vérification", "coordonnées bancaires", "رمز التحقق", "كلمة المرور", "رقم البطاقة"]) },
+    { id: "urgent", w: 20, title: "Pressure to act fast", why: "Scammers create panic so you act before you think.",
+      rx: W(["urgent(?:ly)?", "immediately", "right away", "within \\d+ ?(?:hours?|hrs?|h|minutes?|mins?|days?)", "today only", "last (?:warning|chance|reminder)", "final (?:notice|warning)", "expires? (?:today|soon)", "will be (?:returned|closed|deleted|suspended|blocked|cancell?ed)(?: to sender)?", "has been (?:blocked|suspended|locked|restricted)", "blocked", "suspended", "sous \\d+ ?h", "immédiatement", "dernier rappel", "bloquée?", "suspendue?", "عاجل", "فوراً", "فورا", "تم إيقاف", "خلال 24 ساعة"]) },
+    { id: "pay", w: 15, title: "Asks you to pay", why: "A small fee is a classic hook to steal your card details.",
+      rx: W(["pay", "payment", "fee", "fees", "customs", "charges?", "redelivery", "settle", "frais", "réglez", "régler", "payer", "paiement", "رسوم", "ادفع"]) },
+    { id: "prize", w: 20, title: "Too good to be true", why: "Unexpected prizes and rewards are bait.",
+      rx: W(["congratulations", "you(?:'ve| have)? won", "winner", "prize", "reward", "gift card", "lottery", "selected to receive", "félicitations", "vous avez gagné", "gagnant", "مبروك", "ربحت", "جائزة"]) },
+    { id: "money", w: 35, title: "Easy money promise", why: "Real jobs don't pay hundreds of dirhams a day for liking videos.",
+      rx: W(["earn", "per day", "daily (?:income|salary|pay)", "part[- ]time", "no experience(?: needed)?", "liking videos", "like (?:videos|posts)", "work from home", "commission", "investment opportunity", "guaranteed (?:profit|returns?)", "gagnez", "sans expérience", "اربح", "دخل يومي"]) },
+    { id: "chat", w: 20, title: "Moves you to a private chat", why: "Moving the conversation to Telegram or a personal number avoids the platform's protections.",
+      rx: new RegExp("(?<![\\p{L}\\p{N}])(?:telegram|whatsapp me|message me on|contact (?:us|me) on|add me on)(?![\\p{L}\\p{N}])|(?<=^|\\s)@[a-z0-9_]{4,}", "giu") },
+    { id: "generic", w: 10, title: "Generic greeting", why: "Your bank knows your name. \"Dear customer\" often means a mass message.",
+      rx: W(["dear (?:customer|user|client|member|valued customer)", "cher client", "chère cliente", "عزيزي العميل"]) },
+    { id: "caps", w: 5, title: "Shouting in capitals", why: "Words in capitals are there to alarm you.", rx: /\b[A-Z]{5,}\b/g }
+  ];
+  var IMPERSON = W(["bank", "post", "customs", "police", "delivery", "courier", "parcel", "package", "banque", "colis", "douane", "impôts", "بنك", "بطاقتك", "بريد", "شرطة", "جمارك"]);
+  var URL_RX = /(?:https?:\/\/|www\.)[^\s<>"']+|(?<![@\w.-])(?:[a-z0-9-]+\.)+(?:com|net|org|info|top|xyz|click|live|shop|icu|buzz|cfd|online|site|link|ae|fr|co|me|ly|gd|io)(?:\/[^\s<>"']*)?/gi;
+  var SHORT = /^(?:https?:\/\/)?(?:www\.)?(?:bit\.ly|tinyurl\.com|t\.co|cutt\.ly|is\.gd|rb\.gy|shorturl\.at|tiny\.cc|ow\.ly|rebrand\.ly)\b/i;
+  var ODD_TLD = /\.(?:top|xyz|info|click|live|shop|icu|buzz|cfd|online|site|link)(?:[\/:?#]|$)/i;
+  var LOOKWORDS = /(post|bank|deliver|verify|secure|pay|track|parcel|colis|suivi|login|account|update)/i;
+  var IP = /^(?:https?:\/\/)?\d{1,3}(?:\.\d{1,3}){3}/;
+
+  function host(u) { return u.replace(/^https?:\/\//i, "").replace(/^www\./i, "").split(/[\/?#:]/)[0]; }
+
+  function analyse(text) {
+    var flags = [], ranges = [];
+    function collect(rx) { rx.lastIndex = 0; var m; while ((m = rx.exec(text))) { if (!m[0]) { rx.lastIndex++; continue; } ranges.push([m.index, m.index + m[0].length]); } }
+    var hit = {};
+    RULES.forEach(function (r) {
+      r.rx.lastIndex = 0;
+      if (r.rx.test(text)) { hit[r.id] = true; flags.push({ title: r.title, why: r.why, w: r.w }); collect(r.rx); }
+    });
+    var urls = [], m; URL_RX.lastIndex = 0;
+    while ((m = URL_RX.exec(text))) { urls.push({ u: m[0].replace(/[.,;:!?)]+$/, ""), i: m.index }); }
+    if (urls.length) {
+      urls.forEach(function (x) { ranges.push([x.i, x.i + x.u.length]); });
+      flags.push({ title: "Contains a link", why: "Most scams push you to a fake page. Check where a link really goes before you tap it.", w: 10 });
+      var anyShort = urls.some(function (x) { return SHORT.test(x.u); });
+      var anyOdd = urls.some(function (x) { return ODD_TLD.test(host(x.u) + "/"); });
+      var anyLook = urls.some(function (x) { var h = host(x.u); return !SHORT.test(x.u) && h.indexOf("-") > -1 && LOOKWORDS.test(h); });
+      var anyHttp = urls.some(function (x) { return /^http:\/\//i.test(x.u); });
+      var anyIp = urls.some(function (x) { return IP.test(x.u); });
+      if (anyShort) flags.push({ title: "Shortened link", why: "A short link hides the real address it opens.", w: 20 });
+      if (anyOdd) flags.push({ title: "Unusual domain ending", why: "Endings like .top, .xyz or .info are cheap and popular with scammers. Real banks and couriers use their own domain.", w: 20 });
+      if (anyLook) flags.push({ title: "Look-alike domain", why: "The address mixes trusted words (post, bank, verify…) with dashes to look official.", w: 15 });
+      if (anyHttp) flags.push({ title: "Link is not secure", why: "The link uses http instead of https.", w: 5 });
+      if (anyIp) flags.push({ title: "Link to a raw IP address", why: "Real services don't send links to numeric addresses.", w: 20 });
+    }
+    IMPERSON.lastIndex = 0;
+    if ((urls.length || hit.pay || hit.cred) && IMPERSON.test(text)) {
+      flags.push({ title: "Uses the name of an organisation", why: "Together with a link or a request for money or codes, this is how impersonation works.", w: 10 });
+      collect(IMPERSON);
+    }
+    var score = Math.min(100, flags.reduce(function (s, f) { return s + f.w; }, 0));
+    flags.sort(function (a, b) { return b.w - a.w; });
+    return { score: score, flags: flags, ranges: merge(ranges) };
+  }
+  function merge(r) {
+    r.sort(function (a, b) { return a[0] - b[0]; });
+    var out = [];
+    r.forEach(function (x) { var last = out[out.length - 1]; if (last && x[0] <= last[1]) last[1] = Math.max(last[1], x[1]); else out.push([x[0], x[1]]); });
+    return out;
+  }
+  function esc(s) { return s.replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  var COLORS = { high: "#BE2A2A", mid: "#C47A0C", low: "#1E7848" };
+  var arc = document.getElementById("g-arc"), num = document.getElementById("g-num"), result = document.getElementById("result");
+  var shown = 0, anim = null;
+  var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function setGauge(target, color) {
+    arc.setAttribute("stroke", color);
+    if (anim) cancelAnimationFrame(anim);
+    if (reduced) { shown = target; draw(); return; }
+    var from = shown, t0 = performance.now();
+    function step(t) { var p = Math.min(1, (t - t0) / 600), e = 1 - Math.pow(1 - p, 3); shown = Math.round(from + (target - from) * e); draw(); if (p < 1) anim = requestAnimationFrame(step); }
+    anim = requestAnimationFrame(step);
+  }
+  function draw() { arc.setAttribute("stroke-dasharray", Math.max(shown, .01) + " 100"); num.textContent = shown; }
+
+  function render(text) {
+    var r = analyse(text);
+    var lvl = r.score >= 55 ? "high" : r.score >= 25 ? "mid" : "low";
+    result.className = "panel lvl-" + lvl;
+    setGauge(r.score, COLORS[lvl]);
+    document.getElementById("v-short").textContent = { high: "High risk", mid: "Medium risk", low: "Low risk" }[lvl];
+    document.getElementById("v-title").textContent = { high: "Likely a scam", mid: "Suspicious", low: "No red flags found" }[lvl];
+    var n = r.flags.length;
+    document.getElementById("v-sub").textContent = n === 0 ? "This message doesn't use the usual scam tricks." : n + " red flag" + (n > 1 ? "s" : "") + " found in this message.";
+    var ul = document.getElementById("flags");
+    ul.innerHTML = n ? r.flags.map(function (f) { return "<li><b>" + esc(f.title) + "</b><em>+" + f.w + "</em><span>" + esc(f.why) + "</span></li>"; }).join("") : '<li class="none">Nothing suspicious detected.</li>';
+    var html = "", pos = 0;
+    r.ranges.forEach(function (x) { html += esc(text.slice(pos, x[0])) + "<mark>" + esc(text.slice(x[0], x[1])) + "</mark>"; pos = x[1]; });
+    html += esc(text.slice(pos));
+    var hl = document.getElementById("hl");
+    hl.innerHTML = html || "<span style='color:var(--muted)'>Paste a message to see it here.</span>";
+    hl.dir = /[؀-ۿ]/.test(text) ? "rtl" : "ltr";
+    document.getElementById("advice").innerHTML = {
+      high: "<b>Don't tap the link and don't reply.</b>Contact the organisation through its official app or the number on the back of your card. Then delete the message and report it as spam.",
+      mid: "<b>Be careful.</b>Check with the sender through an official channel before you click, pay or share anything.",
+      low: "<b>Looks normal.</b>A clean result is not a guarantee: never share a code (OTP, PIN) with anyone, even someone who seems official."
+    }[lvl];
+  }
+
+  var ta = document.getElementById("msg"), samplesEl = document.getElementById("samples");
+  SAMPLES.forEach(function (s, i) {
+    var b = document.createElement("button"); b.type = "button"; b.textContent = s.label; b.setAttribute("aria-pressed", "false");
+    b.addEventListener("click", function () {
+      ta.value = s.text;
+      samplesEl.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+      render(s.text);
+    });
+    samplesEl.appendChild(b);
+  });
+  document.getElementById("check").addEventListener("click", function () {
+    samplesEl.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", "false"); });
+    render(ta.value.trim());
+  });
+  document.getElementById("clear").addEventListener("click", function () { ta.value = ""; ta.focus(); render(""); samplesEl.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", "false"); }); });
+  ta.addEventListener("keydown", function (e) { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") document.getElementById("check").click(); });
+
+  samplesEl.querySelector("button").click();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atlas Renovation Quotes · Demo by Samah Elashry</title>
+<meta name="description" content="Demo project by Samah Elashry: a quote generator for a renovation company, with job templates, VAT, discount and deposit calculated automatically.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Atlas Renovation quote tool (fictional company). Single light theme by choice.
+   Layout: editor on the left, the live quote document on the right. */
+:root {
+  color-scheme: light;
+  --bg: #E9ECEF;
+  --surface: #FFFFFF;
+  --ink: #1B2026;
+  --muted: #5B646E;
+  --line: #D4D9DF;
+  --accent: #C9501B;
+  --accent-dark: #A63F12;
+  --accent-soft: #FBE6DA;
+  --steel: #263443;
+  --ok: #1E7044;
+  --ok-soft: #DDF0E4;
+  --display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 1rem/1.55 var(--body); -webkit-font-smoothing: antialiased; }
+[hidden] { display: none !important; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+p { margin: 0; }
+button, input, select { font: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.wrap { max-width: 1240px; margin-inline: auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+.demo-bar { background: var(--steel); color: #E6ECF2; font-size: .8125rem; font-weight: 500; padding-top: env(safe-area-inset-top, 0px); }
+.demo-row { display: flex; gap: 6px 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding-block: 9px; }
+.demo-bar b { color: #FFB48F; font-weight: 600; }
+.demo-bar a { color: #E6ECF2; text-decoration: none; }
+.demo-bar a:hover { text-decoration: underline; }
+
+.intro { padding-block: 40px 28px; display: flex; flex-direction: column; gap: 10px; max-width: 760px; }
+.eyebrow { font: 500 .75rem/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.intro h1 { font: 800 clamp(2.25rem, 1.4rem + 3.2vw, 3.75rem)/.98 var(--display); text-transform: uppercase; letter-spacing: .005em; }
+.intro p { color: var(--muted); font-size: 1.0625rem; max-width: 62ch; }
+
+.app { display: grid; grid-template-columns: minmax(0, 440px) minmax(0, 1fr); gap: 24px; align-items: start; padding-bottom: 72px; }
+@media (max-width: 1020px) { .app { grid-template-columns: minmax(0, 1fr); } }
+
+.editor { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.group { display: flex; flex-direction: column; gap: 10px; }
+.group > .h { font: 500 .75rem/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.field label { font-size: .875rem; font-weight: 500; }
+input[type="text"], input[type="number"], select { width: 100%; min-width: 0; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); }
+input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg button { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: .875rem; font-weight: 500; }
+.seg button:hover { border-color: var(--ink); }
+.seg button[aria-pressed="true"] { background: var(--steel); border-color: var(--steel); color: #fff; }
+.lines { display: flex; flex-direction: column; gap: 8px; }
+.line { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1fr) minmax(0, 1.2fr) 30px; gap: 6px; align-items: end; padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.line .desc { grid-column: 1 / -1; }
+.line input, .line select { padding: 8px; font-size: .875rem; }
+.line input[type="number"] { font-family: var(--mono); text-align: right; }
+.mini { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.mini span { font: 500 .625rem/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.del { width: 30px; height: 36px; border: 0; background: transparent; color: var(--muted); border-radius: 6px; cursor: pointer; font-size: 1.125rem; }
+.del:hover { background: var(--accent-soft); color: var(--accent-dark); }
+.add { align-self: flex-start; border: 1px dashed var(--muted); background: transparent; border-radius: 8px; padding: 8px 12px; cursor: pointer; color: var(--ink); font-size: .875rem; font-weight: 500; }
+.add:hover { border-color: var(--accent); color: var(--accent-dark); }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { border: 0; background: var(--accent); color: #fff; border-radius: 10px; padding: 12px 18px; font-weight: 600; cursor: pointer; }
+.btn:hover { background: var(--accent-dark); }
+.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.btn.ghost:hover { border-color: var(--ink); }
+.toast { font-size: .875rem; background: var(--ok-soft); color: var(--ok); border-radius: 10px; padding: 10px 12px; }
+
+/* Quote document */
+.doc-wrap { min-width: 0; overflow-x: auto; }
+.doc { background: var(--surface); border-radius: 6px; box-shadow: 0 1px 2px rgba(27, 32, 38, .08), 0 24px 48px -24px rgba(27, 32, 38, .35); min-width: 560px; overflow: hidden; }
+.doc-band { height: 10px; background: repeating-linear-gradient(-45deg, var(--accent) 0 14px, var(--steel) 14px 28px); }
+.doc-in { padding: 36px 40px 40px; display: flex; flex-direction: column; gap: 26px; }
+.doc-top { display: flex; justify-content: space-between; gap: 24px; align-items: flex-start; }
+.co b { font: 800 1.625rem/1 var(--display); letter-spacing: .04em; text-transform: uppercase; display: block; }
+.co span { display: block; color: var(--muted); font-size: .8125rem; margin-top: 6px; }
+.qt { text-align: right; }
+.qt h2 { font: 800 2.5rem/1 var(--display); letter-spacing: .02em; text-transform: uppercase; color: var(--accent); }
+.qt dl { margin: 10px 0 0; display: grid; grid-template-columns: auto auto; gap: 2px 12px; font-size: .8125rem; justify-content: end; }
+.qt dt { color: var(--muted); }
+.qt dd { margin: 0; font-family: var(--mono); }
+.status { display: inline-block; margin-top: 10px; font: 500 .6875rem/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; padding: 5px 8px; border-radius: 4px; background: var(--bg); color: var(--muted); }
+.status.sent { background: var(--ok-soft); color: var(--ok); }
+.billto { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; padding-block: 16px; border-block: 1px solid var(--line); }
+.billto .k { font: 500 .6875rem/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.billto p { font-weight: 500; }
+table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+th { font: 500 .6875rem/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); text-align: left; padding: 0 8px 10px; border-bottom: 2px solid var(--ink); }
+th.n, td.n { text-align: right; }
+td { padding: 11px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+td.n { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.totals { margin-left: auto; width: min(340px, 100%); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; font-size: .9375rem; }
+.totals dt { color: var(--muted); }
+.totals dd { margin: 0; text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.totals .grand { font-weight: 600; color: var(--ink); padding-top: 8px; border-top: 2px solid var(--ink); font-size: 1.0625rem; }
+.totals dd.grand { font-weight: 500; }
+.pay { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.pay div { background: var(--bg); border-radius: 8px; padding: 12px 14px; }
+.pay div:first-child { background: var(--accent-soft); }
+.pay span { display: block; font-size: .8125rem; color: var(--muted); }
+.pay b { font: 500 1.125rem/1.3 var(--mono); }
+.terms { font-size: .8125rem; color: var(--muted); }
+.sign { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; padding-top: 28px; }
+.sign div { border-top: 1px solid var(--ink); padding-top: 6px; font-size: .8125rem; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="demo-bar">
+  <div class="wrap demo-row">
+    <span><b>Demo project</b> by Samah Elashry · Fictional company, nothing is sent</span>
+    <a href="../">← Back to portfolio</a>
+  </div>
+</div>
+
+<main class="wrap">
+  <section class="intro">
+    <p class="eyebrow">Automation · Quote generator</p>
+    <h1>From site visit to signed quote in five minutes</h1>
+    <p>Renovation teams often rewrite every quote by hand in Word or Excel. Here they pick a job type, adjust quantities, and the quote calculates the discount, VAT and deposit on its own. Switch to France and the quote changes to euros, 20% VAT and French.</p>
+  </section>
+
+  <section class="app">
+    <form class="editor" id="editor" novalidate>
+      <div class="group">
+        <span class="h">Client</span>
+        <div class="two">
+          <div class="field"><label for="c-name">Client name</label><input type="text" id="c-name" value="Mariam Al Suwaidi"></div>
+          <div class="field"><label for="c-addr">Project address</label><input type="text" id="c-addr" value="Villa 14, Al Barsha 2, Dubai"></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <span class="h" id="tpl-h">Job type</span>
+        <div class="seg" id="tpl" role="group" aria-labelledby="tpl-h">
+          <button type="button" data-tpl="bath" aria-pressed="true">Bathroom</button>
+          <button type="button" data-tpl="kitchen" aria-pressed="false">Kitchen</button>
+          <button type="button" data-tpl="paint" aria-pressed="false">Painting</button>
+          <button type="button" data-tpl="blank" aria-pressed="false">Blank</button>
+        </div>
+      </div>
+
+      <div class="group">
+        <span class="h">Lines</span>
+        <div class="lines" id="lines"></div>
+        <button type="button" class="add" id="add">+ Add a line</button>
+      </div>
+
+      <div class="group">
+        <span class="h" id="reg-h">Country</span>
+        <div class="seg" id="region" role="group" aria-labelledby="reg-h">
+          <button type="button" data-region="ae" aria-pressed="true">UAE · AED · VAT 5%</button>
+          <button type="button" data-region="fr" aria-pressed="false">France · EUR · TVA 20%</button>
+        </div>
+        <div class="two">
+          <div class="field"><label for="disc">Discount (%)</label><input type="number" id="disc" min="0" max="50" step="1" value="5"></div>
+          <div class="field"><label for="dep">Deposit on signature</label>
+            <select id="dep"><option value="30" selected>30%</option><option value="40">40%</option><option value="50">50%</option></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn" id="send">Send to client</button>
+        <button type="button" class="btn ghost" id="copy">Copy summary</button>
+      </div>
+      <p class="toast" id="toast" role="status" hidden></p>
+    </form>
+
+    <div class="doc-wrap">
+      <article class="doc" id="doc" aria-label="Quote preview">
+        <div class="doc-band" aria-hidden="true"></div>
+        <div class="doc-in">
+          <div class="doc-top">
+            <div class="co"><b>Atlas Renovation</b><span id="d-co">Al Quoz, Dubai · hello@atlas-renovation.example</span></div>
+            <div class="qt">
+              <h2 id="d-title">Quote</h2>
+              <dl>
+                <dt id="d-no-l">No.</dt><dd>Q-2026-0147</dd>
+                <dt id="d-date-l">Date</dt><dd id="d-date"></dd>
+                <dt id="d-valid-l">Valid until</dt><dd id="d-valid"></dd>
+              </dl>
+              <span class="status" id="d-status">Draft</span>
+            </div>
+          </div>
+          <div class="billto">
+            <div><p class="k" id="d-client-l">Client</p><p id="d-client"></p></div>
+            <div><p class="k" id="d-site-l">Project address</p><p id="d-site"></p></div>
+          </div>
+          <table>
+            <thead><tr><th id="h-desc">Description</th><th class="n" id="h-qty">Qty</th><th id="h-unit">Unit</th><th class="n" id="h-up">Unit price</th><th class="n" id="h-tot">Total</th></tr></thead>
+            <tbody id="d-rows"></tbody>
+          </table>
+          <dl class="totals" id="d-totals"></dl>
+          <div class="pay" id="d-pay"></div>
+          <p class="terms" id="d-terms"></p>
+          <div class="sign"><div id="d-sign1">Client signature</div><div id="d-sign2">For Atlas Renovation</div></div>
+        </div>
+      </article>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  var TPL = {
+    bath: [
+      { k: "b1", en: "Remove existing tiles and fixtures", fr: "Dépose du carrelage et des équipements", q: 1, u: "lot", ae: 1800, fr$: 450 },
+      { k: "b2", en: "Waterproofing", fr: "Étanchéité", q: 8, u: "m2", ae: 65, fr$: 18 },
+      { k: "b3", en: "Wall and floor tiling, tiles included", fr: "Carrelage murs et sol, fourniture comprise", q: 24, u: "m2", ae: 140, fr$: 38 },
+      { k: "b4", en: "Install shower, basin and WC", fr: "Pose douche, lavabo et WC", q: 1, u: "lot", ae: 2400, fr$: 650 },
+      { k: "b5", en: "Plumbing and electrical updates", fr: "Mise à jour plomberie et électricité", q: 1, u: "lot", ae: 1600, fr$: 420 }
+    ],
+    kitchen: [
+      { k: "k1", en: "Remove old kitchen", fr: "Dépose de l'ancienne cuisine", q: 1, u: "lot", ae: 1200, fr$: 320 },
+      { k: "k2", en: "Cabinets, supply and installation", fr: "Meubles, fourniture et pose", q: 6, u: "m", ae: 1350, fr$: 340 },
+      { k: "k3", en: "Quartz worktop", fr: "Plan de travail en quartz", q: 4, u: "m", ae: 950, fr$: 260 },
+      { k: "k4", en: "Backsplash tiling", fr: "Crédence carrelée", q: 5, u: "m2", ae: 160, fr$: 45 },
+      { k: "k5", en: "Appliance connections", fr: "Raccordement de l'électroménager", q: 1, u: "lot", ae: 700, fr$: 180 }
+    ],
+    paint: [
+      { k: "p1", en: "Wall preparation and filling", fr: "Préparation et rebouchage des murs", q: 120, u: "m2", ae: 8, fr$: 4 },
+      { k: "p2", en: "Walls, two coats of paint", fr: "Murs, deux couches de peinture", q: 120, u: "m2", ae: 18, fr$: 9 },
+      { k: "p3", en: "Ceilings", fr: "Plafonds", q: 45, u: "m2", ae: 20, fr$: 10 },
+      { k: "p4", en: "Doors and frames", fr: "Portes et huisseries", q: 6, u: "unit", ae: 150, fr$: 45 }
+    ],
+    blank: [{ en: "", fr: "", q: 1, u: "lot", ae: 0, fr$: 0 }]
+  };
+  var UNITS = { lot: { en: "lot", fr: "forfait" }, m2: { en: "m²", fr: "m²" }, m: { en: "m", fr: "ml" }, unit: { en: "unit", fr: "unité" }, day: { en: "day", fr: "jour" } };
+  var L = {
+    en: { title: "Quote", no: "No.", date: "Date", valid: "Valid until", client: "Client", site: "Project address", desc: "Description", qty: "Qty", unit: "Unit", up: "Unit price", tot: "Total",
+      sub: "Subtotal", disc: "Discount", net: "Total before VAT", vat: "VAT 5%", grand: "Total due", dep: "Deposit on signature", bal: "Balance on completion",
+      terms: "Prices include materials and labour. Work starts within 10 days of the deposit. This quote is valid for 30 days.",
+      sign1: "Client signature", sign2: "For Atlas Renovation", co: "Al Quoz, Dubai · hello@atlas-renovation.example", draft: "Draft", sent: "Sent" },
+    fr: { title: "Devis", no: "N°", date: "Date", valid: "Valable jusqu'au", client: "Client", site: "Adresse du chantier", desc: "Désignation", qty: "Qté", unit: "Unité", up: "Prix unitaire", tot: "Total HT",
+      sub: "Sous-total HT", disc: "Remise", net: "Total HT", vat: "TVA 20 %", grand: "Total TTC", dep: "Acompte à la signature", bal: "Solde à la fin des travaux",
+      terms: "Fournitures et main-d'œuvre comprises. Démarrage des travaux sous 10 jours après l'acompte. Devis valable 30 jours.",
+      sign1: "Bon pour accord, signature du client", sign2: "Pour Atlas Rénovation", co: "Paris 11e · bonjour@atlas-renovation.example", draft: "Brouillon", sent: "Envoyé" }
+  };
+
+  var region = "ae", lines = [], sent = false;
+  var $ = function (s) { return document.querySelector(s); };
+  function lang() { return region === "fr" ? "fr" : "en"; }
+  function money(n) {
+    return new Intl.NumberFormat(region === "fr" ? "fr-FR" : "en-AE", { style: "currency", currency: region === "fr" ? "EUR" : "AED" }).format(n);
+  }
+  function fmtDate(d) { return d.toLocaleDateString(region === "fr" ? "fr-FR" : "en-GB", { day: "numeric", month: "short", year: "numeric" }); }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  function loadTemplate(name) {
+    lines = TPL[name].map(function (x) { return { k: x.k || null, en: x.en, fr: x.fr, desc: x[lang()], q: x.q, u: x.u, p: region === "fr" ? x.fr$ : x.ae, edited: false }; });
+    renderLines(); renderDoc();
+  }
+  function findTpl(k) { var all = TPL.bath.concat(TPL.kitchen, TPL.paint); for (var i = 0; i < all.length; i++) if (all[i].k === k) return all[i]; return null; }
+
+  function renderLines() {
+    var html = "";
+    lines.forEach(function (l, i) {
+      var opts = Object.keys(UNITS).map(function (u) { return '<option value="' + u + '"' + (u === l.u ? " selected" : "") + ">" + UNITS[u].en + "</option>"; }).join("");
+      html += '<div class="line" data-i="' + i + '">' +
+        '<input class="desc" type="text" id="l-d-' + i + '" aria-label="Description, line ' + (i + 1) + '" value="' + esc(l.desc) + '" placeholder="Describe the work">' +
+        '<label class="mini"><span>Qty</span><input type="number" id="l-q-' + i + '" min="0" step="any" value="' + l.q + '"></label>' +
+        '<label class="mini"><span>Unit</span><select id="l-u-' + i + '">' + opts + '</select></label>' +
+        '<label class="mini"><span>Unit price</span><input type="number" id="l-p-' + i + '" min="0" step="any" value="' + l.p + '"></label>' +
+        '<button type="button" class="del" aria-label="Remove line ' + (i + 1) + '">×</button></div>';
+    });
+    $("#lines").innerHTML = html;
+  }
+  $("#lines").addEventListener("input", function (e) {
+    var row = e.target.closest(".line[data-i]"); if (!row) return;
+    var l = lines[+row.dataset.i], id = e.target.id;
+    if (id.indexOf("l-d-") === 0) { l.desc = e.target.value; l.edited = true; }
+    if (id.indexOf("l-q-") === 0) l.q = Math.max(0, parseFloat(e.target.value) || 0);
+    if (id.indexOf("l-u-") === 0) l.u = e.target.value;
+    if (id.indexOf("l-p-") === 0) { l.p = Math.max(0, parseFloat(e.target.value) || 0); l.k = null; }
+    renderDoc();
+  });
+  $("#lines").addEventListener("change", function (e) { if (e.target.tagName === "SELECT") { var row = e.target.closest(".line[data-i]"); lines[+row.dataset.i].u = e.target.value; renderDoc(); } });
+  $("#lines").addEventListener("click", function (e) {
+    if (!e.target.classList.contains("del")) return;
+    lines.splice(+e.target.closest(".line").dataset.i, 1);
+    renderLines(); renderDoc();
+  });
+  $("#add").addEventListener("click", function () {
+    lines.push({ k: null, desc: "", q: 1, u: "unit", p: 0, edited: true });
+    renderLines(); renderDoc();
+    var last = $("#l-d-" + (lines.length - 1)); if (last) last.focus();
+  });
+
+  function calc() {
+    var sub = lines.reduce(function (s, l) { return s + l.q * l.p; }, 0);
+    var dPct = Math.min(50, Math.max(0, parseFloat($("#disc").value) || 0));
+    var disc = sub * dPct / 100, net = sub - disc;
+    var vat = net * (region === "fr" ? .20 : .05), total = net + vat;
+    var depPct = +$("#dep").value, dep = total * depPct / 100;
+    return { sub: sub, dPct: dPct, disc: disc, net: net, vat: vat, total: total, depPct: depPct, dep: dep, bal: total - dep };
+  }
+  function renderDoc() {
+    var t = L[lang()], c = calc(), today = new Date(), valid = new Date(); valid.setDate(today.getDate() + 30);
+    document.documentElement.setAttribute("data-doc-lang", lang());
+    $("#doc").lang = lang();
+    $("#d-title").textContent = t.title; $("#d-no-l").textContent = t.no; $("#d-date-l").textContent = t.date; $("#d-valid-l").textContent = t.valid;
+    $("#d-date").textContent = fmtDate(today); $("#d-valid").textContent = fmtDate(valid);
+    $("#d-status").textContent = sent ? t.sent : t.draft; $("#d-status").className = "status" + (sent ? " sent" : "");
+    $("#d-client-l").textContent = t.client; $("#d-site-l").textContent = t.site;
+    $("#d-client").textContent = $("#c-name").value || "—"; $("#d-site").textContent = $("#c-addr").value || "—";
+    $("#d-co").textContent = t.co;
+    $("#h-desc").textContent = t.desc; $("#h-qty").textContent = t.qty; $("#h-unit").textContent = t.unit; $("#h-up").textContent = t.up; $("#h-tot").textContent = t.tot;
+    $("#d-rows").innerHTML = lines.map(function (l) {
+      return "<tr><td>" + (esc(l.desc) || "<span style='color:var(--muted)'>—</span>") + "</td><td class='n'>" + (+l.q).toLocaleString(region === "fr" ? "fr-FR" : "en-US") + "</td><td>" + UNITS[l.u][lang()] + "</td><td class='n'>" + money(l.p) + "</td><td class='n'>" + money(l.q * l.p) + "</td></tr>";
+    }).join("");
+    var rows = "<dt>" + t.sub + "</dt><dd>" + money(c.sub) + "</dd>";
+    if (c.dPct > 0) rows += "<dt>" + t.disc + " " + c.dPct + (region === "fr" ? " %" : "%") + "</dt><dd>− " + money(c.disc) + "</dd><dt>" + t.net + "</dt><dd>" + money(c.net) + "</dd>";
+    rows += "<dt>" + t.vat + "</dt><dd>" + money(c.vat) + "</dd><dt class='grand'>" + t.grand + "</dt><dd class='grand'>" + money(c.total) + "</dd>";
+    $("#d-totals").innerHTML = rows;
+    $("#d-pay").innerHTML = "<div><span>" + t.dep + " (" + c.depPct + (region === "fr" ? " %" : "%") + ")</span><b>" + money(c.dep) + "</b></div><div><span>" + t.bal + "</span><b>" + money(c.bal) + "</b></div>";
+    $("#d-terms").textContent = t.terms; $("#d-sign1").textContent = t.sign1; $("#d-sign2").textContent = t.sign2;
+  }
+
+  $("#tpl").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-tpl]"); if (!b) return;
+    $("#tpl").querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+    sent = false; loadTemplate(b.dataset.tpl);
+  });
+  $("#region").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-region]"); if (!b || b.dataset.region === region) return;
+    region = b.dataset.region;
+    $("#region").querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+    lines.forEach(function (l) {
+      if (!l.k) return;
+      var src = findTpl(l.k); if (!src) return;
+      l.p = region === "fr" ? src.fr$ : src.ae;
+      if (!l.edited) l.desc = src[lang()];
+    });
+    renderLines(); renderDoc();
+  });
+  ["#c-name", "#c-addr", "#disc"].forEach(function (s) { $(s).addEventListener("input", renderDoc); });
+  $("#dep").addEventListener("change", renderDoc);
+
+  var toast = $("#toast"), toastT = null;
+  function say(msg) { toast.textContent = msg; toast.hidden = false; clearTimeout(toastT); toastT = setTimeout(function () { toast.hidden = true; }, 6000); }
+  $("#send").addEventListener("click", function () {
+    sent = true; renderDoc();
+    say("Marked as sent. In the real version, the quote is emailed to the client as a PDF and saved to the company's Google Drive.");
+  });
+  $("#copy").addEventListener("click", function () {
+    var c = calc(), t = L[lang()];
+    var text = t.title + " Q-2026-0147 · " + ($("#c-name").value || "") + "\n" +
+      lines.map(function (l) { return "- " + l.desc + ": " + l.q + " " + UNITS[l.u][lang()] + " × " + money(l.p) + " = " + money(l.q * l.p); }).join("\n") +
+      "\n" + t.grand + ": " + money(c.total) + "\n" + t.dep + ": " + money(c.dep);
+    try {
+      navigator.clipboard.writeText(text).then(function () { say("Summary copied. Paste it into an email or WhatsApp."); }, function () { say("Copy isn't available here. Select the quote text instead."); });
+    } catch (err) { say("Copy isn't available here. Select the quote text instead."); }
+  });
+
+  loadTemplate("bath");
+})();
+</script>
+</body>
+</html>
