@@ -15,6 +15,10 @@ Full-stack developer (React, Python, AI) with a cybersecurity background, based 
 
 All brands in the demos are fictional. The demos run fully in the browser; the chatbot replies are scripted. Each project page describes how the production version would work (Python, OpenAI API, WhatsApp Business API).
 
+## Client work
+
+**AI skin diagnostics chatbot** (2025): a chatbot for a Korean cosmetics brand that analyses skin from a photo and recommends products from the brand's range. React, Python, OpenAI API. [Read the case study](https://samahelashry.github.io/skin-chatbot/)
+
 ## How it's built
 
 - Plain HTML, CSS and JavaScript: no framework, no build step, each demo is one self-contained file.
